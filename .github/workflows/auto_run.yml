@@ -1,0 +1,31 @@
+name: Run SUUMO Auto Sheet
+
+on:
+  schedule:
+    - cron: '0 21 * * *'  # 毎日21:00 JST（= 12:00 UTC）
+  workflow_dispatch:       # 手動実行も可能にする
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install gspread oauth2client selenium
+
+      - name: Run script
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.SUUMO_KEY_JSON }}
+        run: |
+          echo "$GOOGLE_APPLICATION_CREDENTIALS" > suumo-key.json
+          python main.py
+
