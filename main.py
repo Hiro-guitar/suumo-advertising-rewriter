@@ -7,7 +7,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 def update_sheet(properties):
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('credentials/suumo-key.json', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name('suumo-key.json', scope)
     client = gspread.authorize(creds)
 
     sheet = client.open('物件空室管理').worksheet('シート1')
