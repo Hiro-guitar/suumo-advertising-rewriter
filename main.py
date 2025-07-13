@@ -16,8 +16,6 @@ def update_sheet(properties):
     sheet.update([header], 'A1:J1')  # 値を先に、範囲を後に
 
     existing_records = sheet.get_all_records()
-    existing_names = [row['物件名'] for row in existing_records]
-
     scraped_names = [prop['物件名'] for prop in properties]
 
     # 削除対象行の特定（1行目ヘッダーなので2からスタート）
@@ -26,23 +24,39 @@ def update_sheet(properties):
         if row['物件名'] not in scraped_names:
             rows_to_delete.append(idx)
 
-    # 削除は後ろから行う（行番号ズレ防止）
     for row_idx in sorted(rows_to_delete, reverse=True):
         sheet.delete_rows(row_idx)
         print(f"🗑 スプレッドシートの行 {row_idx} を削除しました")
 
-    # URLを補完する処理（物件名が一致し、URLが空欄の行に対して）
-    for idx, row in enumerate(existing_records, start=2):
+    # 最新のデータを取得
+    all_values = sheet.get_all_values()
+    latest_records = sheet.get_all_records()  # ヘッダー除いた辞書形式
+    latest_names = [row['物件名'] for row in latest_records]
+
+    # 情報補完処理（すでに存在する物件で空欄セルがある場合）
+    for idx, row in enumerate(latest_records, start=2):  # 行番号2から開始（1はヘッダー）
         for prop in properties:
-            if row['物件名'] == prop['物件名'] and not row['URL'] and prop['URL']:
-                cell = f"J{idx}"
-                sheet.update(cell, [[prop['URL']]])
-                print(f"🔗 URLを補完しました：{row['物件名']} → {prop['URL']}")
+            if row['物件名'] == prop['物件名']:
+                updates = []
+                columns = {
+                    '部屋番号': ("B", prop['部屋番号']),
+                    '所在地': ("C", prop['所在地']),
+                    '最寄り駅': ("D", prop['最寄り駅']),
+                    '賃料': ("E", prop['賃料']),
+                    '管理費': ("F", prop['管理費']),
+                    '間取り': ("G", prop['間取り']),
+                    '専有面積': ("H", prop['専有面積']),
+                    'URL': ("J", prop['URL']),
+                }
+                for key, (col, value) in columns.items():
+                    # 対象セルが空欄 or 値がない場合にのみ更新
+                    existing_value = all_values[idx - 1][ord(col) - ord("A")].strip()
+                    if not existing_value and value != "":
+                        cell = f"{col}{idx}"
+                        sheet.update(cell, [[value]])
+                        print(f"✏️ {row['物件名']} の {key} を補完しました → {value}")
 
-    # 削除後の最新A列を取得（ヘッダー除く）
-    latest_names = sheet.col_values(1)[1:]
-
-    # 追加対象の物件を特定
+    # 追加対象の物件を特定（新規）
     rows_to_add = []
     for prop in properties:
         if prop['物件名'] not in latest_names:
@@ -55,7 +69,7 @@ def update_sheet(properties):
                 prop['管理費'],
                 prop['間取り'],
                 prop['専有面積'],
-                '',  # 使わない列は空白
+                '',  # 使わない列
                 prop['URL']
             ]
             rows_to_add.append(row)
