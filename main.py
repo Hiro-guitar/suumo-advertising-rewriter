@@ -36,7 +36,7 @@ def update_sheet(properties):
         for prop in properties:
             if row['物件名'] == prop['物件名'] and not row['URL'] and prop['URL']:
                 cell = f"J{idx}"
-                sheet.update(cell, prop['URL'])
+                sheet.update(cell, [[prop['URL']]])
                 print(f"🔗 URLを補完しました：{row['物件名']} → {prop['URL']}")
 
     # 削除後の最新A列を取得（ヘッダー除く）
