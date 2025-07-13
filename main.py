@@ -28,8 +28,16 @@ def update_sheet(properties):
 
     # 削除は後ろから行う（行番号ズレ防止）
     for row_idx in sorted(rows_to_delete, reverse=True):
-        sheet.delete_rows(row_idx)  # 複数形に修正
+        sheet.delete_rows(row_idx)
         print(f"🗑 スプレッドシートの行 {row_idx} を削除しました")
+
+    # URLを補完する処理（物件名が一致し、URLが空欄の行に対して）
+    for idx, row in enumerate(existing_records, start=2):
+        for prop in properties:
+            if row['物件名'] == prop['物件名'] and not row['URL'] and prop['URL']:
+                cell = f"J{idx}"
+                sheet.update(cell, prop['URL'])
+                print(f"🔗 URLを補完しました：{row['物件名']} → {prop['URL']}")
 
     # 削除後の最新A列を取得（ヘッダー除く）
     latest_names = sheet.col_values(1)[1:]
