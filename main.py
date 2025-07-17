@@ -16,36 +16,17 @@ def update_sheet(properties):
     sheet.update([header], 'A1:J1')  # 値を先に、範囲を後に
 
     existing_records = sheet.get_all_records()
-        # 物件名ごとの件数をカウント
-    from collections import Counter
-    name_counts = Counter([prop['物件名'] for prop in properties])
-
-    # 物件名と部屋番号のセットを作成
-    scraped_keys = set()
-    for prop in properties:
-        name = prop['物件名']
-        if name_counts[name] > 1:
-            key = f"{name}__{prop['部屋番号']}"
-        else:
-            key = name
-        scraped_keys.add(key)
+    scraped_names = [prop['物件名'] for prop in properties]
 
     # 削除対象行の特定（1行目ヘッダーなので2からスタート）
     rows_to_delete = []
     for idx, row in enumerate(existing_records, start=2):
-        name = row['物件名']
-        room = row['部屋番号']
-        if name_counts[name] > 1:
-            key = f"{name}__{room}"
-        else:
-            key = name
-        if key not in scraped_keys:
+        if row['物件名'] not in scraped_names:
             rows_to_delete.append(idx)
 
     for row_idx in sorted(rows_to_delete, reverse=True):
         sheet.delete_rows(row_idx)
         print(f"🗑 スプレッドシートの行 {row_idx} を削除しました")
-
 
     # 最新のデータを取得
     all_values = sheet.get_all_values()
