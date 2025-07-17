@@ -19,28 +19,10 @@ def update_sheet(properties):
     scraped_names = [prop['物件名'] for prop in properties]
 
     # 削除対象行の特定（1行目ヘッダーなので2からスタート）
-        # 削除対象行の特定（1行目ヘッダーなので2からスタート）
     rows_to_delete = []
-
-    # 物件名の出現回数をカウント
-    from collections import Counter
-    name_counter = Counter([row['物件名'] for row in existing_records])
-
-    # 既存物件を物件名 + 部屋番号で整理
-    scraped_set_full = set((prop['物件名'], prop['部屋番号']) for prop in properties)
-    scraped_names_only = set(prop['物件名'] for prop in properties)
-
     for idx, row in enumerate(existing_records, start=2):
-        name = row['物件名']
-        room = row['部屋番号']
-        if name_counter[name] > 1:
-            # 同じ物件名が複数ある場合は、部屋番号も含めてチェック
-            if (name, room) not in scraped_set_full:
-                rows_to_delete.append(idx)
-        else:
-            # 1件しかない場合は、物件名だけで判定
-            if name not in scraped_names_only:
-                rows_to_delete.append(idx)
+        if row['物件名'] not in scraped_names:
+            rows_to_delete.append(idx)
 
     for row_idx in sorted(rows_to_delete, reverse=True):
         sheet.delete_rows(row_idx)
@@ -74,14 +56,10 @@ def update_sheet(properties):
                         sheet.update(cell, [[value]])
                         print(f"✏️ {row['物件名']} の {key} を補完しました → {value}")
 
-        # 既存シートの物件名 + 部屋番号のセットを作成
-    latest_keys = set((row['物件名'], row['部屋番号']) for row in latest_records)
-
     # 追加対象の物件を特定（新規）
     rows_to_add = []
     for prop in properties:
-        key = (prop['物件名'], prop['部屋番号'])
-        if key not in latest_keys:
+        if prop['物件名'] not in latest_names:
             row = [
                 prop['物件名'],
                 prop['部屋番号'],
