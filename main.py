@@ -22,7 +22,7 @@ def update_sheet(properties):
 
     # 比較用：物件名・部屋番号をトリミング＆文字列化
     def normalize(val):
-        return str(val).strip()
+        return str(val or "").strip().lstrip("'")
 
     scraped_keys = {(normalize(prop['物件名']), normalize(prop['部屋番号'])) for prop in properties}
 
