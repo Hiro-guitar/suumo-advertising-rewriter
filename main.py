@@ -5,6 +5,9 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 def update_sheet(properties):
+    import gspread
+    from oauth2client.service_account import ServiceAccountCredentials
+
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('suumo-key.json', scope)
@@ -16,12 +19,17 @@ def update_sheet(properties):
     sheet.update([header], 'A1:J1')
 
     existing_records = sheet.get_all_records()
-    scraped_keys = {(prop['物件名'], prop['部屋番号']) for prop in properties}
 
-    # 削除対象行の特定（物件名＋部屋番号で一致しないもの）
+    # 比較用：物件名・部屋番号をトリミング＆文字列化
+    def normalize(val):
+        return str(val).strip()
+
+    scraped_keys = {(normalize(prop['物件名']), normalize(prop['部屋番号'])) for prop in properties}
+
+    # 削除対象行の特定
     rows_to_delete = []
     for idx, row in enumerate(existing_records, start=2):
-        key = (row['物件名'], row['部屋番号'])
+        key = (normalize(row['物件名']), normalize(row['部屋番号']))
         if key not in scraped_keys:
             rows_to_delete.append(idx)
 
@@ -29,16 +37,16 @@ def update_sheet(properties):
         sheet.delete_rows(row_idx)
         print(f"🗑 スプレッドシートの行 {row_idx} を削除しました")
 
-    # 最新のデータを取得（削除後）
+    # 最新のデータ取得（削除後）
     all_values = sheet.get_all_values()
     latest_records = sheet.get_all_records()
-    latest_keys = {(row['物件名'], row['部屋番号']) for row in latest_records}
+    latest_keys = {(normalize(row['物件名']), normalize(row['部屋番号'])) for row in latest_records}
 
-    # 情報補完処理（空欄セルに限り上書き）
+    # 情報補完処理（空欄セルを補う）
     for idx, row in enumerate(latest_records, start=2):
         for prop in properties:
-            if row['物件名'] == prop['物件名'] and row['部屋番号'] == prop['部屋番号']:
-                updates = []
+            if (normalize(row['物件名']) == normalize(prop['物件名']) and
+                normalize(row['部屋番号']) == normalize(prop['部屋番号'])):
                 columns = {
                     '所在地': ("C", prop['所在地']),
                     '最寄り駅': ("D", prop['最寄り駅']),
@@ -55,10 +63,10 @@ def update_sheet(properties):
                         sheet.update(cell, [[value]])
                         print(f"✏️ {row['物件名']}（{row['部屋番号']}）の {key} を補完しました → {value}")
 
-    # 追加対象の特定（物件名＋部屋番号で存在しないもの）
+    # 新規物件の追加（物件名＋部屋番号で存在しないもの）
     rows_to_add = []
     for prop in properties:
-        key = (prop['物件名'], prop['部屋番号'])
+        key = (normalize(prop['物件名']), normalize(prop['部屋番号']))
         if key not in latest_keys:
             row = [
                 prop['物件名'],
