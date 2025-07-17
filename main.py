@@ -74,10 +74,14 @@ def update_sheet(properties):
                         sheet.update(cell, [[value]])
                         print(f"✏️ {row['物件名']} の {key} を補完しました → {value}")
 
+        # 既存シートの物件名 + 部屋番号のセットを作成
+    latest_keys = set((row['物件名'], row['部屋番号']) for row in latest_records)
+
     # 追加対象の物件を特定（新規）
     rows_to_add = []
     for prop in properties:
-        if prop['物件名'] not in latest_names:
+        key = (prop['物件名'], prop['部屋番号'])
+        if key not in latest_keys:
             row = [
                 prop['物件名'],
                 prop['部屋番号'],
