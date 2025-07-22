@@ -21,10 +21,13 @@ def update_sheet(properties):
 
     scraped_keys = {(normalize(p['物件名']), normalize(p['部屋番号'])) for p in properties}
 
-    # 1. 削除対象（シートにあるがスクレイピングにない行）
+    # 1. 削除対象（シートにあるがスクレイピングにない行）  
     rows_to_delete = []
     for idx, row in enumerate(existing_records, start=2):
         if not row['物件名']:
+            continue
+        if not row['部屋番号'] or row['部屋番号'].strip() == "":
+            # 部屋番号空欄の行は削除しない
             continue
         key = (normalize(row['物件名']), normalize(row['部屋番号']))
         if key not in scraped_keys:
@@ -34,7 +37,7 @@ def update_sheet(properties):
         sheet.delete_rows(row_idx)
         print(f"🗑 スプレッドシートの行 {row_idx} を削除しました")
 
-    # 2. 補完処理
+    # 2. 補完処理  
     all_values = sheet.get_all_values()
     latest_records = sheet.get_all_records()
     latest_keys = {(normalize(r['物件名']), normalize(r['部屋番号'])) for r in latest_records}
@@ -91,7 +94,7 @@ def update_sheet(properties):
                             print(f"✏️ {row['物件名']}（{row['部屋番号']}）の {col} を補完 → {value}")
                     break
 
-    # 3. 新規追加（used_propsにない物件のみ）
+    # 3. 新規追加（used_propsにない物件のみ）  
     rows_to_add = []
     for prop in properties:
         key = (normalize(prop['物件名']), normalize(prop['部屋番号']))
