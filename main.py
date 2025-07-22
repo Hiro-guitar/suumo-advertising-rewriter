@@ -23,7 +23,13 @@ def update_sheet(properties):
 
     # 削除対象の特定
     rows_to_delete = []
-    for idx, row in enumerate(existing_records, start=2):
+        for idx, row in enumerate(existing_records, start=2):
+        if not row['物件名']:
+            continue  # 空行ならスキップ
+
+        if not row['部屋番号']:
+            continue  # 部屋番号が空欄なら削除しない（補完対象とする）
+
         key = (normalize(row['物件名']), normalize(row['部屋番号']))
         if key not in scraped_keys:
             rows_to_delete.append(idx)
