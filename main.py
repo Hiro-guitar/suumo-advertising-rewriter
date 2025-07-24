@@ -58,6 +58,8 @@ def update_sheet(properties):
                 prop = candidates[0]
                 used_props.add((normalize(prop['物件名']), normalize(prop['部屋番号'])))
 
+                existing_i_value = all_values[idx - 1][8]  # I列は列インデックス8（0始まり）
+
                 row_values = [
                     prop['物件名'],
                     prop['部屋番号'],
