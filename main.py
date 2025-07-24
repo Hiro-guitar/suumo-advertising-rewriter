@@ -67,7 +67,7 @@ def update_sheet(properties):
                     prop['管理費'],
                     prop['間取り'],
                     prop['専有面積'],
-                    '',
+                    existing_i_value,
                     prop['URL']
                 ]
                 cell_range = f"A{idx}:J{idx}"
@@ -109,7 +109,7 @@ def update_sheet(properties):
                 prop['管理費'],
                 prop['間取り'],
                 prop['専有面積'],
-                '',
+                None,  # I列：未記入（元から空欄のまま）
                 prop['URL']
             ]
             rows_to_add.append(row)
