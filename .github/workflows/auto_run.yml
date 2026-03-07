@@ -2,8 +2,8 @@ name: Run SUUMO Auto Sheet
 
 on:
   schedule:
-    - cron: '0 21 * * *'  # 毎日21:00 JST（= 12:00 UTC）
-  workflow_dispatch:       # 手動実行も可能にする
+    - cron: '30 0,6,9,13 * * *'  # JST 9:30, 15:30, 18:30, 22:30（1日4回）
+  workflow_dispatch:              # 手動実行も可能にする
 
 jobs:
   run-script:
