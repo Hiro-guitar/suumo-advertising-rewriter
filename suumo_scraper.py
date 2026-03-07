@@ -170,14 +170,13 @@ def extract_free_comment_urls(driver, properties):
                 driver.switch_to.default_content()
                 continue
 
-            # 物件名リンクをクリックして詳細ページへ
+            # 行内の「詳細」リンクをクリックして詳細ページへ
             row = rows[i]
-            name_cell = row.find_element(By.CSS_SELECTOR, "td:nth-child(4)")
             try:
-                link = name_cell.find_element(By.TAG_NAME, "a")
-                link.click()
+                detail_link = row.find_element(By.XPATH, ".//a[span[text()='詳細']]")
+                detail_link.click()
             except Exception:
-                # リンクがない場合はスキップ
+                # 詳細リンクがない場合はスキップ
                 print(f"  ➖ {prop_name}: 詳細リンクなし")
                 properties[i]["空室確認URL"] = ""
                 driver.switch_to.default_content()
