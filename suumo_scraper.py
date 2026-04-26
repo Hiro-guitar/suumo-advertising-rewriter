@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import re
+import unicodedata
 
 # 空室確認URLとして認識するドメイン
 KNOWN_VACANCY_DOMAINS = ['itandibb.com', 'es-square.net', 'bb.ielove.jp']
@@ -256,7 +257,11 @@ def _get_element_and_ancestors(elem, levels=3):
 
 
 def _extract_known_domain_url(text):
-    """テキストから既知ドメインのURLを抽出（クエリパラメータ除去済み）"""
+    """テキストから既知ドメインのURLを抽出（クエリパラメータ除去済み）
+
+    SUUMO禁止文字対策で全角化された文字（／：．＿等）を半角に正規化してから抽出する。
+    """
+    text = unicodedata.normalize('NFKC', text)
     urls = re.findall(r'https?://[^\s<>"\'。、）\)\]]+', text)
     for url in urls:
         # クエリパラメータを除去（いい生活スクエアのURL対策: 100文字制限）
