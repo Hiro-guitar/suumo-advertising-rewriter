@@ -260,8 +260,10 @@ def _extract_known_domain_url(text):
     """テキストから既知ドメインのURLを抽出（クエリパラメータ除去済み）
 
     SUUMO禁止文字対策で全角化された文字（／：．＿等）を半角に正規化してから抽出する。
+    長音記号「ー」(U+30FC)はNFKCで変換されないため別途半角ハイフンに置換する。
     """
     text = unicodedata.normalize('NFKC', text)
+    text = text.replace('ー', '-')
     urls = re.findall(r'https?://[^\s<>"\'。、）\)\]]+', text)
     for url in urls:
         # クエリパラメータを除去（いい生活スクエアのURL対策: 100文字制限）
