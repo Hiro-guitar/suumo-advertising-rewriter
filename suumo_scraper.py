@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import re
+import unicodedata
 
 # 空室確認URLとして認識するドメイン
 KNOWN_VACANCY_DOMAINS = ['itandibb.com', 'es-square.net', 'bb.ielove.jp']
@@ -221,7 +222,10 @@ def _find_vacancy_url_in_page(driver):
                 # 要素自身と親要素のテキストを確認
                 for target in _get_element_and_ancestors(elem, levels=3):
                     text = target.text
-                    url = _extract_known_domain_url(text)
+                    # SUUMO禁止文字対策で全角化されたURL対応:
+                    # フリーコメント周辺のテキストのみ NFKC + 長音記号置換で半角に正規化
+                    normalized = unicodedata.normalize('NFKC', text).replace('ー', '-')
+                    url = _extract_known_domain_url(normalized)
                     if url:
                         return url
         except Exception:
